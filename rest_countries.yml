@@ -1,0 +1,19 @@
+version: "6.0.0"
+streams:
+  - type: DeclarativeStream
+    name: countries
+    primary_key: cca3
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "https://restcountries.com/v3.1"
+        path: "/all"
+        http_method: "GET"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination

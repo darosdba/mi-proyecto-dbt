@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    database: airbyte_curso
+    schema: main
+    tables:
+      - name: pokemon
+        description: "Datos de Pokemon cargados desde PokeAPI via Airbyte"
+      - name: nasa_apod
+        description: "Astronomy Picture of the Day de NASA via Airbyte"
+      - name: paises
+        description: "Datos de países del mundo cargados desde REST Countries API via Airbyte"
