@@ -1,0 +1,108 @@
+version: 2
+
+models:
+
+  # ─────────────────────────────────────────────────────────────
+  # obt_pokemon
+  # ─────────────────────────────────────────────────────────────
+  - name: obt_pokemon
+    description: >
+      One Big Table final de Pokemon para análisis. Consolida datos base,
+      tipos desanidados y clasificación de poder (power_tier) calculada
+      a partir de base_experience. Materializada como tabla para consultas rápidas.
+    columns:
+      - name: pokemon_id
+        description: "ID único del Pokemon. Clave primaria de la tabla."
+        tests:
+          - unique
+          - not_null
+      - name: pokemon_name
+        description: "Nombre del Pokemon en minúsculas."
+        tests:
+          - not_null
+      - name: height
+        description: "Altura en decímetros."
+        tests:
+          - not_null
+      - name: weight
+        description: "Peso en hectogramos."
+        tests:
+          - not_null
+      - name: base_experience
+        description: "Experiencia base. Puede ser NULL para ciertos Pokemon."
+      - name: type_primary
+        description: "Tipo principal del Pokemon."
+        tests:
+          - not_null
+      - name: type_secondary
+        description: "Tipo secundario. NULL si el Pokemon es mono-tipo."
+      - name: power_tier
+        description: >
+          Clasificación de poder basada en base_experience:
+          'Legendary' (>= 200), 'Strong' (>= 100), 'Normal' (< 100).
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Legendary', 'Strong', 'Normal']
+
+  # ─────────────────────────────────────────────────────────────
+  # obt_paises
+  # ─────────────────────────────────────────────────────────────
+  - name: obt_paises
+    description: >
+      One Big Table final de países del mundo para análisis geográfico y demográfico.
+      Consolida datos de la REST Countries API con clasificaciones de población
+      y nombres de región en español. Ordenada por región y nombre para navegación intuitiva.
+      Materializada como tabla para consultas de dashboard.
+    columns:
+      - name: codigo_pais
+        description: "Código ISO 3166-1 alpha-3 (3 letras). Clave primaria de la tabla."
+        tests:
+          - unique
+          - not_null
+      - name: nombre_comun
+        description: "Nombre común del país en inglés."
+        tests:
+          - not_null
+      - name: nombre_oficial
+        description: "Nombre oficial completo del país."
+        tests:
+          - not_null
+      - name: region
+        description: "Región geográfica en inglés."
+        tests:
+          - not_null
+      - name: region_es
+        description: "Región geográfica en español (Sudamérica, Europa, Asia, etc.)."
+        tests:
+          - not_null
+      - name: subregion
+        description: "Sub-región geográfica. Puede ser NULL."
+      - name: capital
+        description: "Capital del país. NULL para territorios sin capital formal."
+      - name: population
+        description: "Población estimada del país."
+        tests:
+          - not_null
+      - name: categoria_poblacion
+        description: >
+          Clasificación demográfica en 5 niveles según el tamaño de población:
+          'Muy grande (>100M)', 'Grande (10M-100M)', 'Mediano (1M-10M)',
+          'Pequeño (100K-1M)', 'Micro (<100K)'.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - 'Muy grande (>100M)'
+                - 'Grande (10M-100M)'
+                - 'Mediano (1M-10M)'
+                - 'Pequeño (100K-1M)'
+                - 'Micro (<100K)'
+      - name: flag_url
+        description: "URL de la bandera del país en formato PNG."
+        tests:
+          - not_null
+      - name: flag_descripcion
+        description: "Descripción textual de la bandera. Puede ser NULL."
+      - name: loaded_at
+        description: "Timestamp de extracción original por Airbyte."

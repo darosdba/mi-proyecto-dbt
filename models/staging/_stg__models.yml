@@ -1,0 +1,128 @@
+version: 2
+
+models:
+
+  # ─────────────────────────────────────────────────────────────
+  # stg_pokemon  (tests de clase — se mantienen como referencia)
+  # ─────────────────────────────────────────────────────────────
+  - name: stg_pokemon
+    description: "Datos de Pokemon limpiados y renombrados desde la API PokeAPI vía Airbyte."
+    columns:
+      - name: pokemon_id
+        description: "ID único del Pokemon según la PokeAPI."
+        tests:
+          - unique
+          - not_null
+      - name: pokemon_name
+        description: "Nombre del Pokemon en minúsculas."
+        tests:
+          - not_null
+      - name: height
+        description: "Altura del Pokemon en decímetros."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              strictly: false
+      - name: weight
+        description: "Peso del Pokemon en hectogramos."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              strictly: false
+      - name: base_experience
+        description: "Experiencia base que otorga el Pokemon al ser derrotado. Puede ser NULL en algunos Pokemon."
+      - name: types
+        description: "Array JSON con los tipos del Pokemon (p.ej. fire, water)."
+      - name: loaded_at
+        description: "Timestamp de extracción por Airbyte."
+
+  # ─────────────────────────────────────────────────────────────
+  # stg_paises  (énfasis Tarea 6)
+  # ─────────────────────────────────────────────────────────────
+  - name: stg_paises
+    description: >
+      Datos de países del mundo limpiados desde la REST Countries API vía Airbyte.
+      Extrae campos escalares y anidados (nombre, capital, banderas) del JSON original.
+    columns:
+      - name: codigo_pais
+        description: "Código ISO 3166-1 alpha-3 del país (3 letras mayúsculas, p.ej. ARG, BRA, USA)."
+        tests:
+          - unique
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_equal:
+              value: 3
+      - name: nombre_comun
+        description: "Nombre común del país en inglés (p.ej. Argentina)."
+        tests:
+          - not_null
+      - name: nombre_oficial
+        description: "Nombre oficial completo del país (p.ej. Argentine Republic)."
+        tests:
+          - not_null
+      - name: region
+        description: "Región geográfica según la REST Countries API."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Africa', 'Americas', 'Asia', 'Europe', 'Oceania', 'Antarctic']
+      - name: subregion
+        description: "Sub-región geográfica (p.ej. South America, Western Europe). Puede ser NULL."
+      - name: population
+        description: "Población estimada del país."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              strictly: false
+      - name: capital
+        description: "Capital del país extraída del array JSON (primer elemento). Puede ser NULL para territorios sin capital formal."
+      - name: flag_url
+        description: "URL de la bandera en formato PNG."
+        tests:
+          - not_null
+      - name: flag_descripcion
+        description: "Descripción textual de la bandera (atributo alt). Puede ser NULL si la API no la provee."
+      - name: loaded_at
+        description: "Timestamp de extracción por Airbyte."
+
+  # ─────────────────────────────────────────────────────────────
+  # stg_nasa_apod  (énfasis Tarea 6)
+  # ─────────────────────────────────────────────────────────────
+  - name: stg_nasa_apod
+    description: >
+      Datos de la NASA Astronomy Picture of the Day (APOD) limpiados y renombrados
+      desde la API NASA APOD vía Airbyte. Cada fila representa una imagen o video del día.
+    columns:
+      - name: apod_date
+        description: "Fecha de la imagen astronómica del día (formato YYYY-MM-DD). Clave primaria natural."
+        tests:
+          - unique
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: "^\\d{4}-\\d{2}-\\d{2}$"
+      - name: apod_title
+        description: "Título de la imagen o video del día."
+        tests:
+          - not_null
+      - name: apod_explanation
+        description: "Explicación astronómica detallada provista por la NASA."
+        tests:
+          - not_null
+      - name: media_url
+        description: "URL estándar del recurso multimedia (imagen o video)."
+        tests:
+          - not_null
+      - name: media_url_hd
+        description: "URL en alta definición (HD). Disponible solo para imágenes; puede ser NULL para videos."
+      - name: media_type
+        description: "Tipo de medio: 'image' para fotos astronómicas, 'video' para contenido en video."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['image', 'video']
+      - name: copyright
+        description: "Crédito o copyright del autor. NULL cuando la imagen es de dominio público."
+      - name: loaded_at
+        description: "Timestamp de extracción por Airbyte."

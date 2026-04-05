@@ -1,0 +1,100 @@
+version: 2
+
+models:
+
+  # ─────────────────────────────────────────────────────────────
+  # int_pokemon_with_types
+  # ─────────────────────────────────────────────────────────────
+  - name: int_pokemon_with_types
+    description: >
+      Modelo intermedio que desanida el array JSON de tipos de cada Pokemon.
+      Extrae el tipo primario y secundario como columnas escalares para facilitar
+      análisis posteriores en la capa marts.
+    columns:
+      - name: pokemon_id
+        description: "ID único del Pokemon. Heredado de stg_pokemon."
+        tests:
+          - unique
+          - not_null
+      - name: pokemon_name
+        description: "Nombre del Pokemon en minúsculas."
+        tests:
+          - not_null
+      - name: height
+        description: "Altura del Pokemon en decímetros."
+        tests:
+          - not_null
+      - name: weight
+        description: "Peso del Pokemon en hectogramos."
+        tests:
+          - not_null
+      - name: base_experience
+        description: "Experiencia base otorgada al derrotar al Pokemon. Puede ser NULL."
+      - name: type_primary
+        description: "Tipo principal del Pokemon (p.ej. fire, water, grass). Extraído de types->0."
+        tests:
+          - not_null
+      - name: type_secondary
+        description: "Tipo secundario del Pokemon si tiene doble tipo (p.ej. flying). NULL si es mono-tipo."
+
+  # ─────────────────────────────────────────────────────────────
+  # int_paises_enriched
+  # ─────────────────────────────────────────────────────────────
+  - name: int_paises_enriched
+    description: >
+      Modelo intermedio que enriquece los datos de países con clasificaciones
+      de negocio: categoría por tamaño de población y nombre de región en español.
+      Sirve como base para el mart obt_paises.
+    columns:
+      - name: codigo_pais
+        description: "Código ISO 3166-1 alpha-3 del país. Clave primaria heredada de stg_paises."
+        tests:
+          - unique
+          - not_null
+      - name: nombre_comun
+        description: "Nombre común del país en inglés."
+        tests:
+          - not_null
+      - name: nombre_oficial
+        description: "Nombre oficial completo del país."
+        tests:
+          - not_null
+      - name: region
+        description: "Región geográfica en inglés según la REST Countries API."
+        tests:
+          - not_null
+      - name: subregion
+        description: "Sub-región geográfica. Puede ser NULL para algunos territorios."
+      - name: population
+        description: "Población estimada del país."
+        tests:
+          - not_null
+      - name: capital
+        description: "Capital del país. Puede ser NULL para territorios sin capital formal."
+      - name: flag_url
+        description: "URL de la bandera en PNG."
+      - name: flag_descripcion
+        description: "Descripción textual de la bandera."
+      - name: categoria_poblacion
+        description: >
+          Clasificación del país por tamaño de población en 5 niveles:
+          'Muy grande (>100M)', 'Grande (10M-100M)', 'Mediano (1M-10M)',
+          'Pequeño (100K-1M)', 'Micro (<100K)'.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - 'Muy grande (>100M)'
+                - 'Grande (10M-100M)'
+                - 'Mediano (1M-10M)'
+                - 'Pequeño (100K-1M)'
+                - 'Micro (<100K)'
+      - name: region_es
+        description: >
+          Nombre de la región en español, derivado de la combinación de region y subregion.
+          Valores posibles: Sudamérica, Norteamérica, Centroamérica, Caribe,
+          Europa, África, Asia, Oceanía.
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Timestamp de extracción por Airbyte."
